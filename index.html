@@ -1,910 +1,665 @@
 <!DOCTYPE html>
 <html lang="vi" data-theme="dark" data-lang="vi">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Struct Pro — Phần mềm Tra Cốt Thép Bê Tông</title>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet"/>
-  <style>
-    /* ── TOKENS ── */
-    :root {
-      --accent:   #3b82f6;
-      --accent2:  #06b6d4;
-      --success:  #10b981;
-      --warn:     #f59e0b;
-      --danger:   #ef4444;
-      --radius:   14px;
-      --trans:    .25s cubic-bezier(.4,0,.2,1);
-    }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>StructPro — DIN · SIA Rebar Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;800;900&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--din:#c05a30;--sia:#0fa875;--t:.28s cubic-bezier(.4,0,.2,1)}
+[data-theme="dark"]{
+  --bg:#12151c;--bg2:#181d27;--sur:#1e2535;--sur2:#242d3d;
+  --brd:#2a3650;--txt:#a8bdd0;--sub:#506278;--muted:#2e4058;
+  --hi:#eaf2fc;--gold:#d4923a;--ok:#0fa875;--bad:#c05a30;
+}
+[data-theme="light"]{
+  --bg:#f4f6fb;--bg2:#e8edf5;--sur:#fff;--sur2:#f0f4fb;
+  --brd:#cdd8ea;--txt:#2a3e52;--sub:#587090;--muted:#a8c0d0;
+  --hi:#0a1828;--gold:#b07020;--ok:#0a8a62;--bad:#b04822;
+}
 
-    /* DARK */
-    [data-theme="dark"] {
-      --bg:       #060b12;
-      --bg2:      #0b1420;
-      --surface:  #0f1c2d;
-      --surface2: #152338;
-      --border:   #1e3352;
-      --text:     #dde6f0;
-      --muted:    #4a6b8a;
-      --sub:      #8ca8c4;
-      --logo-txt: #e2ecf8;
-      --grid-c:   rgba(59,130,246,.04);
-      --glow-c:   rgba(59,130,246,.13);
-    }
-    /* LIGHT */
-    [data-theme="light"] {
-      --bg:       #f0f4fa;
-      --bg2:      #e4eaf4;
-      --surface:  #ffffff;
-      --surface2: #f6f9fe;
-      --border:   #c5d3e8;
-      --text:     #0f2040;
-      --muted:    #7a95b4;
-      --sub:      #4a6a8e;
-      --logo-txt: #0f2040;
-      --grid-c:   rgba(59,130,246,.06);
-      --glow-c:   rgba(59,130,246,.09);
-    }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{
+  background:var(--bg);color:var(--txt);
+  font-family:'Inter',sans-serif;
+  transition:background var(--t),color var(--t);
+}
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* ── FULLPAGE SCROLL SNAP ── */
+.pages{
+  height:100vh;
+  overflow-y:scroll;
+  scroll-snap-type:y mandatory;
+  scroll-behavior:smooth;
+}
+.pages::-webkit-scrollbar{display:none}
+.pages{-ms-overflow-style:none;scrollbar-width:none}
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      min-height: 100vh;
-      overflow-x: hidden;
-      transition: background var(--trans), color var(--trans);
-    }
+.page{
+  min-height:100vh;
+  scroll-snap-align:start;
+  scroll-snap-stop:always;
+  display:flex;flex-direction:column;
+  justify-content:center;
+  padding:0 7vw;
+  position:relative;
+  overflow:hidden;
+}
 
-    /* GRID BG */
-    body::before {
-      content: '';
-      position: fixed; inset: 0;
-      background-image:
-        linear-gradient(var(--grid-c) 1px, transparent 1px),
-        linear-gradient(90deg, var(--grid-c) 1px, transparent 1px),
-        linear-gradient(var(--grid-c) 1px, transparent 1px),
-        linear-gradient(90deg, var(--grid-c) 1px, transparent 1px);
-      background-size: 80px 80px, 80px 80px, 16px 16px, 16px 16px;
-      pointer-events: none; z-index: 0;
-    }
-    body::after {
-      content: '';
-      position: fixed; top: -200px; left: 50%; transform: translateX(-50%);
-      width: 900px; height: 500px;
-      background: radial-gradient(ellipse, var(--glow-c) 0%, transparent 70%);
-      pointer-events: none; z-index: 0;
-    }
+/* subtle grid bg */
+.page::before{
+  content:'';position:absolute;inset:0;
+  background-image:radial-gradient(circle,rgba(80,98,120,.12) 1px,transparent 1px);
+  background-size:30px 30px;pointer-events:none;z-index:0;
+}
 
-    .wrap { max-width: 960px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+.page-inner{position:relative;z-index:1;max-width:1100px;width:100%;margin:0 auto}
 
-    /* ── NAV ── */
-    nav {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 22px 0 18px;
-      border-bottom: 1px solid var(--border);
-    }
-    .logo {
-      display: flex; align-items: center; gap: 11px;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 22px; font-weight: 800;
-      letter-spacing: -0.8px; color: var(--logo-txt);
-      text-decoration: none;
-    }
-    .logo-mark {
-      width: 38px; height: 38px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 19px;
-      box-shadow: 0 4px 18px rgba(59,130,246,.35);
-      flex-shrink: 0;
-      position: relative; overflow: hidden;
-    }
-    .logo-mark::after {
-      content: '';
-      position: absolute; inset: 0;
-      background: linear-gradient(135deg, rgba(255,255,255,.15), transparent);
-    }
-    .logo-name .accent { color: var(--accent); }
+/* ── NAV (fixed within page 0) ── */
+.topnav{
+  position:absolute;top:0;left:0;right:0;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:28px 7vw;z-index:10;
+}
+.logo{display:flex;align-items:center;gap:11px;text-decoration:none}
+.logo-mark{
+  width:38px;height:38px;border-radius:11px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--sur2);border:1px solid var(--brd);
+  position:relative;overflow:hidden;flex-shrink:0;
+}
+.logo-mark::after{content:'';position:absolute;inset:0;background:linear-gradient(145deg,rgba(192,90,48,.2),rgba(15,168,117,.15))}
+.logo-mark svg{position:relative;z-index:1;width:18px;height:18px;fill:none;stroke:var(--hi);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.logo-name{font-size:18px;font-weight:800;color:var(--hi);letter-spacing:-.5px}
+.logo-sub{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--sub);margin-top:1px}
 
-    .nav-right { display: flex; align-items: center; gap: 8px; }
+.nav-r{display:flex;align-items:center;gap:8px}
+.np{font-family:'DM Mono',monospace;font-size:10px;padding:4px 12px;border-radius:20px;letter-spacing:.3px}
+.np-din{color:var(--din);border:1px solid rgba(192,90,48,.28);background:rgba(192,90,48,.07)}
+.np-sia{color:var(--sia);border:1px solid rgba(15,168,117,.25);background:rgba(15,168,117,.07)}
+.lang-grp{display:flex;background:var(--sur);border:1px solid var(--brd);border-radius:8px;overflow:hidden}
+.lang-btn{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;padding:5px 12px;border:none;background:transparent;color:var(--sub);cursor:pointer;transition:all var(--t);letter-spacing:.5px}
+.lang-btn.active{background:linear-gradient(135deg,rgba(192,90,48,.85),rgba(15,168,117,.85));color:#fff}
+.theme-btn{width:34px;height:34px;border-radius:8px;border:1px solid var(--brd);background:var(--sur);color:var(--sub);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:all var(--t)}
+.theme-btn:hover{color:var(--hi)}
 
-    /* Language toggle */
-    .lang-toggle {
-      display: flex; align-items: center;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 100px;
-      padding: 3px;
-      gap: 2px;
-    }
-    .lang-btn {
-      font-family: 'Fira Code', monospace;
-      font-size: 11px; font-weight: 600;
-      padding: 4px 10px;
-      border-radius: 100px;
-      border: none; cursor: pointer;
-      background: transparent;
-      color: var(--muted);
-      transition: all var(--trans);
-      letter-spacing: .5px;
-    }
-    .lang-btn.active {
-      background: var(--accent);
-      color: #fff;
-    }
+/* ── PAGE DOT INDICATORS ── */
+.page-dots{
+  position:fixed;right:28px;top:50%;transform:translateY(-50%);
+  display:flex;flex-direction:column;gap:10px;z-index:100;
+}
+.pdot{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--muted);cursor:pointer;
+  transition:all .3s ease;border:none;padding:0;
+}
+.pdot.active{background:var(--hi);transform:scale(1.3)}
 
-    /* Theme toggle */
-    .theme-btn {
-      width: 36px; height: 36px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--text);
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 16px;
-      transition: all var(--trans);
-    }
-    .theme-btn:hover { border-color: var(--accent); }
+/* ── SCROLL HINT ── */
+.scroll-hint{
+  position:absolute;bottom:32px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:7px;
+  opacity:.45;animation:bounce 2s infinite ease-in-out;
+}
+@keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(6px)}}
+.scroll-hint span{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--sub)}
+.scroll-arrow{width:16px;height:16px;fill:none;stroke:var(--sub);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
-    .nav-pill {
-      font-family: 'Fira Code', monospace;
-      font-size: 10px; color: var(--muted);
-      border: 1px solid var(--border);
-      padding: 5px 13px; border-radius: 100px;
-      letter-spacing: .5px;
-    }
+/* ── HERO PAGE ── */
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;
+  text-transform:uppercase;color:var(--sub);margin-bottom:28px;
+}
+.e-dot{width:5px;height:5px;border-radius:50%;background:linear-gradient(135deg,var(--din),var(--sia));animation:pulse 2.2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.2;transform:scale(.5)}}
 
-    /* ── HERO ── */
-    .hero { padding: 64px 0 40px; text-align: center; }
+/* BIG HERO TEXT — XenSnip style */
+.hero-h1{
+  font-size:clamp(52px,7vw,96px);
+  font-weight:600;
+  line-height:1.0;
+  letter-spacing:-2.5px;
+  color:var(--hi);
+  margin-bottom:24px;
+}
+.hero-h1 em{
+  font-style:normal;
+  background:linear-gradient(120deg,var(--din) 0%,var(--sia) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
 
-    .hero-badge {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: rgba(59,130,246,.1);
-      border: 1px solid rgba(59,130,246,.22);
-      border-radius: 100px;
-      padding: 6px 18px;
-      font-family: 'Fira Code', monospace;
-      font-size: 12px; color: var(--accent2);
-      margin-bottom: 26px;
-      animation: fadeDown .5s ease both;
-    }
-    .pulse-dot {
-      width: 6px; height: 6px; background: var(--success);
-      border-radius: 50%; animation: pulse 2s infinite;
-    }
-    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.25;transform:scale(.6)} }
+.hero-sub{
+  font-size:clamp(15px,1.8vw,19px);
+  color:var(--sub);
+  font-weight:300;
+  max-width:600px;
+  line-height:1.8;
+  margin-bottom:40px;
+}
 
-    .hero h1 {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: clamp(40px, 7vw, 72px);
-      font-weight: 800; line-height: 1.02;
-      letter-spacing: -3px;
-      margin-bottom: 18px;
-      animation: fadeDown .5s .07s ease both;
-    }
-    .g1 { background: linear-gradient(135deg, var(--text), var(--sub)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .g2 { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.cta-row{display:flex;gap:12px;flex-wrap:wrap}
+.btn-main{
+  display:inline-flex;align-items:center;gap:9px;padding:14px 28px;
+  border-radius:10px;background:var(--hi);color:var(--bg);
+  font-size:15px;font-weight:700;border:none;cursor:pointer;
+  text-decoration:none;transition:all var(--t);letter-spacing:-.2px;
+}
+.btn-main:hover{opacity:.85;transform:translateY(-2px)}
+.btn-main svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.btn-soft{
+  display:inline-flex;align-items:center;gap:8px;padding:14px 26px;
+  border-radius:10px;border:1px solid var(--brd);background:transparent;
+  color:var(--txt);font-size:15px;font-weight:400;cursor:pointer;
+  text-decoration:none;transition:all var(--t);
+}
+.btn-soft:hover{border-color:var(--sub);transform:translateY(-2px)}
 
-    .hero-sub {
-      font-size: 15px; color: var(--sub);
-      max-width: 520px; margin: 0 auto 38px;
-      line-height: 1.75; font-weight: 400;
-      animation: fadeDown .5s .14s ease both;
-    }
+/* hero trust badges */
+.trust-row{display:flex;align-items:center;gap:20px;margin-top:36px;flex-wrap:wrap}
+.tbadge{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)}
 
-    /* ── SLIDESHOW ── */
-    .slideshow-wrap {
-      position: relative;
-      width: 100%; max-width: 700px;
-      margin: 0 auto 40px;
-      border-radius: 18px;
-      overflow: hidden;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      box-shadow: 0 24px 60px rgba(0,0,0,.25);
-      animation: fadeDown .5s .2s ease both;
-    }
-    .slides { position: relative; height: 340px; }
-    .slide {
-      position: absolute; inset: 0;
-      display: flex; align-items: center; justify-content: center;
-      flex-direction: column; gap: 12px;
-      opacity: 0;
-      transition: opacity .7s cubic-bezier(.4,0,.2,1);
-      padding: 24px;
-    }
-    .slide.active { opacity: 1; }
+/* ── SECTION PAGE ── */
+.page-label{
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;
+  text-transform:uppercase;color:var(--sub);margin-bottom:18px;
+}
+.page-h{
+  font-size:clamp(38px,5.5vw,72px);
+  font-weight:600;
+  line-height:1.05;
+  letter-spacing:-1.5px;
+  color:var(--hi);
+  margin-bottom:18px;
+}
+.page-h em{
+  font-style:normal;
+  background:linear-gradient(120deg,var(--din),var(--sia));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.page-sub{
+  font-size:clamp(14px,1.5vw,17px);
+  color:var(--sub);
+  font-weight:300;
+  max-width:560px;
+  line-height:1.8;
+}
 
-    /* Slide visual backgrounds */
-    .slide-1 { background: linear-gradient(135deg, #0a1628 0%, #0f2040 50%, #0a1628 100%); }
-    .slide-2 { background: linear-gradient(135deg, #071420 0%, #0d2035 50%, #071420 100%); }
-    .slide-3 { background: linear-gradient(135deg, #0c1a10 0%, #0f2918 50%, #0c1a10 100%); }
-    .slide-4 { background: linear-gradient(135deg, #1a1006 0%, #2a1a08 50%, #1a1006 100%); }
+/* ── FEATURES GRID PAGE ── */
+.feat-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+  margin-top:40px;
+}
+@media(max-width:720px){.feat-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:460px){.feat-grid{grid-template-columns:1fr}}
 
-    [data-theme="light"] .slide-1 { background: linear-gradient(135deg, #dceeff 0%, #c8e0ff 50%, #dceeff 100%); }
-    [data-theme="light"] .slide-2 { background: linear-gradient(135deg, #d0e8f8 0%, #bbd4f0 50%, #d0e8f8 100%); }
-    [data-theme="light"] .slide-3 { background: linear-gradient(135deg, #d4f0e4 0%, #bde4cf 50%, #d4f0e4 100%); }
-    [data-theme="light"] .slide-4 { background: linear-gradient(135deg, #fff0d4 0%, #fde4b8 50%, #fff0d4 100%); }
+.fcard{
+  background:var(--sur);border:1px solid var(--brd);border-radius:16px;
+  padding:24px;transition:all var(--t);
+}
+.fcard:hover{transform:translateY(-4px);border-color:var(--sub)}
+.ficon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+.ficon svg{width:19px;height:19px;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ic-d{background:rgba(192,90,48,.1);border:1px solid rgba(192,90,48,.2)}
+.ic-d svg{stroke:var(--din)}
+.ic-s{background:rgba(15,168,117,.09);border:1px solid rgba(15,168,117,.18)}
+.ic-s svg{stroke:var(--sia)}
+.ic-b{background:rgba(212,146,58,.1);border:1px solid rgba(212,146,58,.18)}
+.ic-b svg{stroke:var(--gold)}
+.fcard-h{font-size:14px;font-weight:700;color:var(--hi);margin-bottom:8px;letter-spacing:-.2px}
+.fcard-d{font-size:13px;color:var(--sub);line-height:1.7;font-weight:300}
 
-    .slide-icon { font-size: 64px; filter: drop-shadow(0 8px 24px rgba(0,0,0,.4)); }
-    .slide-title {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 20px; font-weight: 700; letter-spacing: -.5px;
-      color: var(--text);
-    }
-    .slide-desc { font-size: 13px; color: var(--sub); max-width: 380px; text-align: center; line-height: 1.6; }
+/* ── STD CARDS PAGE ── */
+.std-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:40px}
+@media(max-width:640px){.std-grid{grid-template-columns:1fr}}
+.std-card{border-radius:20px;border:1px solid var(--brd);overflow:hidden;transition:all var(--t)}
+.std-card:hover{transform:translateY(-4px)}
+.std-card.dc:hover{border-color:rgba(192,90,48,.4)}
+.std-card.sc:hover{border-color:rgba(15,168,117,.35)}
+.std-head{padding:28px 26px 20px;position:relative;overflow:hidden}
+.std-card.dc .std-head{background:linear-gradient(145deg,rgba(192,90,48,.1),rgba(192,90,48,.03))}
+.std-card.sc .std-head{background:linear-gradient(145deg,rgba(15,168,117,.09),rgba(15,168,117,.02))}
+.std-head::before{content:'';position:absolute;top:0;left:0;right:0;height:1.5px}
+.dc .std-head::before{background:linear-gradient(90deg,var(--din),transparent)}
+.sc .std-head::before{background:linear-gradient(90deg,var(--sia),transparent)}
+.std-flag{font-size:28px;margin-bottom:12px;display:block}
+.std-code{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px}
+.dc .std-code{color:var(--din)}
+.sc .std-code{color:var(--sia)}
+.std-name{font-size:22px;font-weight:800;color:var(--hi);letter-spacing:-.5px;margin-bottom:4px}
+.std-full{font-size:12px;color:var(--sub);font-weight:300;line-height:1.55}
+.std-body{background:var(--sur);padding:18px 26px 22px;border-top:1px solid var(--brd)}
+.fl{list-style:none;display:flex;flex-direction:column;gap:9px;margin-bottom:18px}
+.fl li{display:flex;align-items:flex-start;gap:9px;font-size:13px;color:var(--sub);line-height:1.6;font-weight:300}
+.fdot{width:4px;height:4px;border-radius:50%;margin-top:7px;flex-shrink:0}
+.dc .fdot{background:var(--din)}
+.sc .fdot{background:var(--sia)}
+.specs{display:flex;border:1px solid var(--brd);border-radius:10px;overflow:hidden}
+.sp{flex:1;padding:10px 13px;border-right:1px solid var(--brd)}
+.sp:last-child{border-right:none}
+.sp-l{font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:4px}
+.sp-v{font-family:'DM Mono',monospace;font-size:12px;font-weight:500;color:var(--hi)}
 
-    /* SVG rebar illustration in slide */
-    .rebar-svg { width: 100%; max-width: 340px; }
+/* ── COMPARE PAGE ── */
+.cmp-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--brd);border-radius:18px;overflow:hidden;margin-top:40px}
+@media(max-width:640px){.cmp-grid{grid-template-columns:1fr}}
+.cmp-col+.cmp-col{border-left:1px solid var(--brd)}
+.cmp-head{padding:20px 24px;border-bottom:1px solid var(--brd)}
+.dcol .cmp-head{background:linear-gradient(145deg,rgba(192,90,48,.08),transparent)}
+.scol .cmp-head{background:linear-gradient(145deg,rgba(15,168,117,.07),transparent)}
+.cmp-norm{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.8px;margin-bottom:5px}
+.dcol .cmp-norm{color:var(--din)}
+.scol .cmp-norm{color:var(--sia)}
+.cmp-title{font-size:18px;font-weight:800;color:var(--hi);letter-spacing:-.4px}
+.cmp-row{display:flex;flex-direction:column;padding:11px 24px;border-bottom:1px solid rgba(42,54,80,.5)}
+.cmp-row:last-child{border-bottom:none}
+.cr-l{font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:4px}
+.cr-v{font-size:13px;color:var(--txt);font-weight:300}
+.cr-v strong{color:var(--hi);font-weight:600}
 
-    /* slide dots */
-    .slide-dots {
-      position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
-      display: flex; gap: 6px; z-index: 10;
-    }
-    .dot {
-      width: 6px; height: 6px; border-radius: 3px;
-      background: rgba(255,255,255,.3);
-      cursor: pointer;
-      transition: all .3s;
-    }
-    .dot.active { width: 20px; background: var(--accent); }
+/* ── DOWNLOAD PAGE ── */
+.dl-big{
+  font-size:clamp(46px,6.5vw,88px);
+  font-weight:600;
+  line-height:1.0;
+  letter-spacing:-2px;
+  color:var(--hi);
+  margin-bottom:20px;
+}
+.dl-sub{font-size:clamp(14px,1.6vw,18px);color:var(--sub);font-weight:300;margin-bottom:40px;line-height:1.75}
+.dl-badges{display:flex;gap:22px;margin-top:28px;flex-wrap:wrap}
+.dlb{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)}
 
-    /* progress bar */
-    .slide-progress {
-      position: absolute; bottom: 0; left: 0;
-      height: 2px; background: var(--accent);
-      transition: none;
-    }
+/* ── FOOTER PAGE ── */
+.footer-content{display:flex;flex-direction:column;gap:14px}
+.footer-logo{font-size:32px;font-weight:600;color:var(--hi);letter-spacing:-1px}
+.footer-logo em{
+  font-style:normal;
+  background:linear-gradient(120deg,var(--din),var(--sia));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.footer-by{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:28px}
+.footer-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:32px}
+.fc{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.5px;padding:4px 10px;border-radius:6px;border:1px solid var(--brd);color:var(--muted)}
+.footer-copy{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)}
 
-    /* ── FEATURES ── */
-    .features {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 10px; margin-bottom: 40px;
-      animation: fadeDown .5s .28s ease both;
-    }
-    .feat {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px;
-      transition: border-color var(--trans), transform var(--trans), box-shadow var(--trans);
-      position: relative; overflow: hidden;
-    }
-    .feat::before {
-      content: '';
-      position: absolute; top: 0; left: 0; right: 0; height: 2px;
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
-      opacity: 0; transition: opacity var(--trans);
-    }
-    .feat:hover { border-color: rgba(59,130,246,.4); transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,.15); }
-    .feat:hover::before { opacity: 1; }
-    .feat-icon { font-size: 26px; margin-bottom: 12px; }
-    .feat-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 700; margin-bottom: 6px; }
-    .feat-desc { font-size: 12px; color: var(--sub); line-height: 1.6; }
+/* i18n */
+[data-lang="vi"] .en{display:none!important}
+[data-lang="en"] .vi{display:none!important}
 
-    /* ── DOWNLOAD CARD ── */
-    .dl-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 32px;
-      margin-bottom: 14px;
-      position: relative; overflow: hidden;
-      animation: fadeUp .5s .32s ease both;
-      transition: border-color var(--trans);
-    }
-    .dl-card:hover { border-color: rgba(59,130,246,.3); }
-    .dl-card::before {
-      content: '';
-      position: absolute; top: 0; left: 0; right: 0; height: 1px;
-      background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), transparent);
-      opacity: .6;
-    }
-    .card-head {
-      display: flex; align-items: flex-start;
-      justify-content: space-between;
-      gap: 20px; flex-wrap: wrap;
-      margin-bottom: 24px;
-    }
-    .ver-tag {
-      font-family: 'Fira Code', monospace;
-      font-size: 11px;
-      background: rgba(59,130,246,.12); color: var(--accent);
-      border: 1px solid rgba(59,130,246,.2);
-      padding: 3px 10px; border-radius: 4px;
-      display: inline-block; margin-bottom: 8px;
-    }
-    .app-name-big {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 28px; font-weight: 800; letter-spacing: -1px;
-      margin-bottom: 6px;
-    }
-    .app-tagline { font-size: 13px; color: var(--sub); }
-    .rel-date {
-      font-family: 'Fira Code', monospace;
-      font-size: 11px; color: var(--muted);
-      text-align: right; white-space: nowrap;
-    }
+/* anim on scroll snap */
+.page .page-inner{opacity:0;transform:translateY(22px);transition:opacity .55s ease,transform .55s ease}
+.page.visible .page-inner{opacity:1;transform:translateY(0)}
 
-    .stats-row {
-      display: flex; gap: 0;
-      border: 1px solid var(--border);
-      border-radius: 10px; overflow: hidden;
-      margin-bottom: 24px;
-    }
-    .stat { flex: 1; padding: 14px 16px; border-right: 1px solid var(--border); }
-    .stat:last-child { border-right: none; }
-    .stat-label {
-      font-family: 'Fira Code', monospace;
-      font-size: 9px; color: var(--muted);
-      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;
-    }
-    .stat-val { font-size: 15px; font-weight: 700; }
-
-    .dl-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
-    .dl-btn {
-      display: flex; align-items: center; gap: 12px;
-      padding: 14px 18px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.02);
-      text-decoration: none; color: var(--text);
-      transition: all var(--trans);
-      cursor: pointer;
-    }
-    .dl-btn.primary {
-      background: linear-gradient(135deg, rgba(59,130,246,.16), rgba(6,182,212,.08));
-      border-color: rgba(59,130,246,.3);
-    }
-    .dl-btn:hover { border-color: rgba(59,130,246,.5); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
-    .dl-icon { font-size: 28px; flex-shrink: 0; }
-    .dl-info { flex: 1; }
-    .dl-os { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
-    .dl-size { font-family: 'Fira Code', monospace; font-size: 11px; color: var(--muted); }
-    .dl-arrow { color: var(--accent); font-size: 16px; }
-
-    /* ── CHANGELOG ── */
-    .changelog-card, .hist-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 28px 32px;
-      margin-bottom: 14px;
-      transition: border-color var(--trans);
-    }
-    .changelog-card { animation: fadeUp .5s .38s ease both; }
-    .hist-card      { animation: fadeUp .5s .44s ease both; }
-    .changelog-card:hover, .hist-card:hover { border-color: rgba(59,130,246,.2); }
-
-    .sec-title {
-      font-family: 'Fira Code', monospace;
-      font-size: 10px; font-weight: 600;
-      letter-spacing: 2px; text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 20px;
-      display: flex; align-items: center; gap: 10px;
-    }
-    .sec-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-
-    .cl-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
-    .cl-list li { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; line-height: 1.55; color: var(--sub); }
-    .ctag {
-      font-family: 'Fira Code', monospace;
-      font-size: 9px; padding: 3px 7px; border-radius: 3px;
-      flex-shrink: 0; margin-top: 3px; font-weight: 600; letter-spacing: .5px;
-    }
-    .t-new { background: rgba(16,185,129,.15); color: var(--success); }
-    .t-fix { background: rgba(245,158,11,.15);  color: var(--warn); }
-    .t-imp { background: rgba(59,130,246,.12);  color: var(--accent); }
-
-    .hist-row {
-      display: flex; align-items: center;
-      justify-content: space-between; gap: 16px;
-      padding: 12px 0; border-bottom: 1px solid var(--border);
-    }
-    .hist-row:last-child { border-bottom: none; }
-    .hist-ver { font-family: 'Fira Code', monospace; font-size: 13px; font-weight: 500; }
-    .hist-date { font-family: 'Fira Code', monospace; font-size: 11px; color: var(--muted); flex: 1; text-align: center; }
-    .hist-dl {
-      font-family: 'Fira Code', monospace; font-size: 11px; color: var(--accent);
-      text-decoration: none; border: 1px solid rgba(59,130,246,.2);
-      padding: 4px 12px; border-radius: 4px; transition: all var(--trans);
-    }
-    .hist-dl:hover { background: rgba(59,130,246,.1); }
-
-    /* ── FOOTER ── */
-    footer {
-      text-align: center;
-      padding: 36px 0 32px;
-      font-family: 'Fira Code', monospace;
-      font-size: 12px; color: var(--muted);
-      border-top: 1px solid var(--border);
-      margin-top: 40px;
-    }
-    footer a { color: var(--accent); text-decoration: none; }
-    footer a:hover { text-decoration: underline; }
-
-    /* ── ANIMATIONS ── */
-    @keyframes fadeDown { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes fadeUp   { from { opacity: 0; transform: translateY(18px);  } to { opacity: 1; transform: translateY(0); } }
-
-    /* ── RESPONSIVE ── */
-    @media (max-width: 640px) {
-      nav { flex-wrap: wrap; gap: 10px; }
-      .nav-right { flex-wrap: wrap; }
-      .nav-pill { display: none; }
-      .hero { padding: 44px 0 28px; }
-      .slides { height: 260px; }
-      .slide-icon { font-size: 48px; }
-      .slide-title { font-size: 16px; }
-      .dl-card, .changelog-card, .hist-card { padding: 20px 16px; }
-      .stats-row { flex-direction: column; }
-      .stat { border-right: none; border-bottom: 1px solid var(--border); }
-      .stat:last-child { border-bottom: none; }
-      .card-head { flex-direction: column; }
-      .rel-date { text-align: left; }
-    }
-
-    /* i18n hidden */
-    [data-lang="vi"] .en { display: none !important; }
-    [data-lang="en"] .vi { display: none !important; }
-  </style>
+@media(max-width:640px){
+  .topnav{padding:20px 5vw}
+  .page{padding:0 5vw}
+  .norm-pills{display:none}
+  .page-dots{right:14px}
+}
+</style>
 </head>
 <body>
-<div class="wrap">
 
-  <!-- NAV -->
-  <nav>
-    <div class="logo">
-      <div class="logo-mark">🧱</div>
-      <div class="logo-name">Struct<span class="accent">Pro</span></div>
-    </div>
-    <div class="nav-right">
-      <div class="nav-pill">
-        <span class="vi">tra cứu cốt thép bê tông</span>
-        <span class="en">reinforced concrete tool</span>
+<!-- PAGE DOTS -->
+<div class="page-dots" id="page-dots"></div>
+
+<!-- PAGES CONTAINER -->
+<div class="pages" id="pages">
+
+  <!-- PAGE 0: HERO -->
+  <section class="page" id="page-0">
+    <nav class="topnav">
+      <div class="logo">
+        <div class="logo-mark">
+          <svg viewBox="0 0 24 24"><path d="M4 6h16M4 10h12M4 14h8M4 18h8M16 13l2 2 4-4"/></svg>
+        </div>
+        <div>
+          <div class="logo-name">StructPro</div>
+          <div class="logo-sub">Rebar Intelligence</div>
+        </div>
       </div>
-      <!-- Language -->
-      <div class="lang-toggle">
-        <button class="lang-btn active" onclick="setLang('vi')">VI</button>
-        <button class="lang-btn" onclick="setLang('en')">EN</button>
+      <div class="nav-r">
+        <div class="norm-pills" style="display:flex;gap:5px">
+          <span class="np np-din">DIN EN 1992</span>
+          <span class="np np-sia">SIA 262</span>
+        </div>
+        <div class="lang-grp">
+          <button class="lang-btn active" onclick="setLang('vi')">VI</button>
+          <button class="lang-btn" onclick="setLang('en')">EN</button>
+        </div>
+        <button class="theme-btn" onclick="toggleTheme()" id="theme-icon">🌙</button>
       </div>
-      <!-- Theme -->
-      <button class="theme-btn" onclick="toggleTheme()" title="Toggle theme" id="theme-icon">🌙</button>
-    </div>
-  </nav>
+    </nav>
 
-  <!-- HERO -->
-  <section class="hero">
-    <div class="hero-badge" id="latest-badge">
-      <div class="pulse-dot"></div>
-      <span class="vi">Đang tải phiên bản mới nhất…</span>
-      <span class="en">Loading latest version…</span>
-    </div>
-
-    <h1>
-      <span class="g1 vi">Tra Cứu Cốt Thép</span>
-      <span class="g1 en">Reinforced Concrete</span>
-      <br/>
-      <span class="g2 vi">Bê Tông Chuyên Nghiệp</span>
-      <span class="g2 en">Rebar Design Tool</span>
-    </h1>
-
-    <p class="hero-sub vi">Phần mềm hỗ trợ kỹ sư kết cấu tra cứu cốt thép trong bê tông — kiểm tra chiều dài neo, chiều dài nối, hàm lượng cốt thép và tư vấn sử dụng Lenton coupler thông minh.</p>
-    <p class="hero-sub en">Software for RC structural engineers — rebar lookup, development &amp; lap splice length check, reinforcement ratio validation, and smart Lenton coupler advisor.</p>
-
-    <!-- SLIDESHOW -->
-    <div class="slideshow-wrap">
-      <div class="slides" id="slides">
-
-        <!-- Slide 1: Tra thép -->
-        <div class="slide slide-1 active" data-index="0">
-          <div class="slide-icon">🔩</div>
-          <div class="slide-title vi">Tra Cốt Thép Nhanh Chóng</div>
-          <div class="slide-title en">Rebar Lookup in Seconds</div>
-          <div class="slide-desc vi">Chọn đường kính cốt thép (Ø6–Ø50), tra tiết diện, khối lượng dài và tải trọng tính toán theo TCVN 5574:2018.</div>
-          <div class="slide-desc en">Select rebar diameter (Ø6–Ø50), retrieve cross-section area, unit weight and design capacity per TCVN 5574:2018.</div>
-          <svg class="rebar-svg" viewBox="0 0 340 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="rb" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#3b82f6"/>
-                <stop offset="100%" stop-color="#06b6d4"/>
-              </linearGradient>
-            </defs>
-            <!-- rebars -->
-            <rect x="0"   y="24" width="340" height="12" rx="6" fill="url(#rb)" opacity=".9"/>
-            <rect x="0"   y="42" width="340" height="12" rx="6" fill="url(#rb)" opacity=".7"/>
-            <rect x="0"   y="6"  width="340" height="8"  rx="4" fill="url(#rb)" opacity=".5"/>
-            <!-- stirrups -->
-            <rect x="20"  y="2"  width="6" height="56" rx="3" fill="#06b6d4" opacity=".6"/>
-            <rect x="80"  y="2"  width="6" height="56" rx="3" fill="#06b6d4" opacity=".6"/>
-            <rect x="140" y="2"  width="6" height="56" rx="3" fill="#06b6d4" opacity=".6"/>
-            <rect x="200" y="2"  width="6" height="56" rx="3" fill="#06b6d4" opacity=".6"/>
-            <rect x="260" y="2"  width="6" height="56" rx="3" fill="#06b6d4" opacity=".6"/>
-            <rect x="314" y="2"  width="6" height="56" rx="3" fill="#06b6d4" opacity=".6"/>
-          </svg>
-        </div>
-
-        <!-- Slide 2: Neo & nối -->
-        <div class="slide slide-2" data-index="1">
-          <div class="slide-icon">📐</div>
-          <div class="slide-title vi">Chiều Dài Neo & Nối Cốt Thép</div>
-          <div class="slide-title en">Development & Lap Splice Length</div>
-          <div class="slide-desc vi">Tính chiều dài neo cốt thép vào bê tông và chiều dài nối chồng đúng TCVN — cảnh báo ngay khi không đạt.</div>
-          <div class="slide-desc en">Calculate rebar development length into concrete and lap splice length per TCVN — instant pass/fail warnings.</div>
-          <svg class="rebar-svg" viewBox="0 0 340 70" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- beam -->
-            <rect x="10" y="28" width="150" height="14" rx="4" fill="#3b82f6" opacity=".85"/>
-            <!-- hook -->
-            <path d="M160 35 Q190 35 190 55 Q190 65 180 65 L140 65" stroke="#3b82f6" stroke-width="10" fill="none" stroke-linecap="round" opacity=".85"/>
-            <!-- dimension arrow -->
-            <line x1="10" y1="20" x2="190" y2="20" stroke="#06b6d4" stroke-width="1.5" stroke-dasharray="4 3"/>
-            <polygon points="10,17 10,23 3,20" fill="#06b6d4"/>
-            <polygon points="190,17 190,23 197,20" fill="#06b6d4"/>
-            <text x="100" y="16" text-anchor="middle" font-size="10" fill="#06b6d4" font-family="JetBrains Mono,monospace">Ld = 45d</text>
-            <!-- second bar -->
-            <rect x="180" y="28" width="150" height="14" rx="4" fill="#10b981" opacity=".75"/>
-            <text x="255" y="22" text-anchor="middle" font-size="10" fill="#10b981" font-family="JetBrains Mono,monospace">Ls = 38d</text>
-            <line x1="180" y1="20" x2="330" y2="20" stroke="#10b981" stroke-width="1.5" stroke-dasharray="4 3"/>
-            <polygon points="180,17 180,23 173,20" fill="#10b981"/>
-            <polygon points="330,17 330,23 337,20" fill="#10b981"/>
-          </svg>
-        </div>
-
-        <!-- Slide 3: Hàm lượng -->
-        <div class="slide slide-3" data-index="2">
-          <div class="slide-icon">📊</div>
-          <div class="slide-title vi">Kiểm Tra Hàm Lượng Cốt Thép</div>
-          <div class="slide-title en">Reinforcement Ratio Check</div>
-          <div class="slide-desc vi">Tự động so sánh hàm lượng cốt thép thực tế với giới hạn ρmin/ρmax cho phép của tiết diện bê tông.</div>
-          <div class="slide-desc en">Automatically compares actual reinforcement ratio against ρmin/ρmax limits for the concrete section.</div>
-          <svg class="rebar-svg" viewBox="0 0 340 70" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- bar chart: ρmin, ρcurrent, ρmax -->
-            <rect x="40"  y="30" width="40" height="30" rx="3" fill="#10b981" opacity=".8"/>
-            <text x="60" y="26" text-anchor="middle" font-size="9" fill="#10b981" font-family="JetBrains Mono,monospace">ρmin</text>
-            <text x="60" y="68" text-anchor="middle" font-size="8" fill="#4a6b8a" font-family="JetBrains Mono,monospace">0.2%</text>
-
-            <rect x="140" y="10" width="40" height="50" rx="3" fill="#3b82f6" opacity=".9"/>
-            <text x="160" y="6" text-anchor="middle" font-size="9" fill="#3b82f6" font-family="JetBrains Mono,monospace">ρcur</text>
-            <text x="160" y="68" text-anchor="middle" font-size="8" fill="#4a6b8a" font-family="JetBrains Mono,monospace">2.8%</text>
-
-            <rect x="240" y="20" width="40" height="40" rx="3" fill="#f59e0b" opacity=".8"/>
-            <text x="260" y="16" text-anchor="middle" font-size="9" fill="#f59e0b" font-family="JetBrains Mono,monospace">ρmax</text>
-            <text x="260" y="68" text-anchor="middle" font-size="8" fill="#4a6b8a" font-family="JetBrains Mono,monospace">3.0%</text>
-
-            <!-- warning arrow -->
-            <line x1="155" y1="10" x2="235" y2="20" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4 3"/>
-            <polygon points="232,15 238,22 226,22" fill="#ef4444"/>
-          </svg>
-        </div>
-
-        <!-- Slide 4: Lenton -->
-        <div class="slide slide-4" data-index="3">
-          <div class="slide-icon">🔗</div>
-          <div class="slide-title vi">Tư Vấn Lenton Coupler</div>
-          <div class="slide-title en">Lenton Coupler Advisor</div>
-          <div class="slide-desc vi">Gợi ý loại Lenton coupler phù hợp khi hàm lượng cốt thép vượt giới hạn hoặc không đủ chiều dài nối chồng.</div>
-          <div class="slide-desc en">Recommends the right Lenton coupler type when rebar ratio exceeds limits or lap splice space is insufficient.</div>
-          <svg class="rebar-svg" viewBox="0 0 340 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- bar left -->
-            <rect x="10" y="22" width="120" height="16" rx="5" fill="#f59e0b" opacity=".85"/>
-            <!-- coupler -->
-            <rect x="128" y="16" width="84" height="28" rx="6" fill="#3b82f6" opacity=".9"/>
-            <rect x="134" y="20" width="72" height="20" rx="4" fill="#1e3a5f" opacity=".6"/>
-            <text x="170" y="33" text-anchor="middle" font-size="9" fill="#93c5fd" font-family="JetBrains Mono,monospace" font-weight="600">LENTON</text>
-            <!-- bar right -->
-            <rect x="210" y="22" width="120" height="16" rx="5" fill="#f59e0b" opacity=".85"/>
-            <!-- thread lines -->
-            <line x1="128" y1="22" x2="128" y2="38" stroke="#60a5fa" stroke-width="1.5"/>
-            <line x1="212" y1="22" x2="212" y2="38" stroke="#60a5fa" stroke-width="1.5"/>
-          </svg>
-        </div>
-
-      </div><!-- /slides -->
-
-      <!-- Dots -->
-      <div class="slide-dots" id="slide-dots">
-        <div class="dot active" onclick="goSlide(0)"></div>
-        <div class="dot" onclick="goSlide(1)"></div>
-        <div class="dot" onclick="goSlide(2)"></div>
-        <div class="dot" onclick="goSlide(3)"></div>
+    <div class="page-inner">
+      <div class="hero-eyebrow">
+        <div class="e-dot"></div>
+        <span class="vi">Phần mềm kỹ thuật kết cấu</span>
+        <span class="en">Structural engineering tool</span>
       </div>
-
-      <!-- Progress bar -->
-      <div class="slide-progress" id="slide-progress" style="width:0%"></div>
+      <h1 class="hero-h1">
+        <span class="vi">Tra Cốt<br>Thép <em>DIN·SIA</em><br>Chuyên Sâu.</span>
+        <span class="en">Rebar Design<br><em>DIN · SIA</em><br>Precision.</span>
+      </h1>
+      <p class="hero-sub vi">Phần mềm máy tính để bàn cho kỹ sư kết cấu — tra cứu và kiểm tra cốt thép bê tông theo DIN EN 1992-1-1 và SIA 262:2013.</p>
+      <p class="hero-sub en">Desktop software for structural engineers — rebar lookup and verification per DIN EN 1992-1-1 and SIA 262:2013.</p>
+      <div class="cta-row">
+        <a class="btn-main" href="#">
+          <svg viewBox="0 0 24 24"><path d="M12 3v13M7 11l5 5 5-5M3 20h18"/></svg>
+          <span class="vi">Tải xuống miễn phí</span>
+          <span class="en">Download free</span>
+        </a>
+        <a class="btn-soft" href="#" onclick="goToPage(1);return false">
+          <span class="vi">Xem tính năng</span>
+          <span class="en">See features</span>
+        </a>
+      </div>
+      <div class="trust-row">
+        <span class="tbadge">✓ <span class="vi">Miễn phí</span><span class="en">Free</span></span>
+        <span class="tbadge">✓ Windows · macOS · Linux</span>
+        <span class="tbadge">✓ PDF Export</span>
+      </div>
     </div>
 
-    <!-- FEATURES -->
-    <div class="features">
-      <div class="feat">
-        <div class="feat-icon">🔩</div>
-        <div class="feat-title vi">Tra Cốt Thép RC</div>
-        <div class="feat-title en">RC Rebar Lookup</div>
-        <div class="feat-desc vi">Tra nhanh thông số cốt thép trong bê tông theo đường kính — diện tích, khối lượng, cường độ CB300-V, CB400-V.</div>
-        <div class="feat-desc en">Quickly look up RC rebar properties by diameter — area, weight, grade CB300-V / CB400-V.</div>
-      </div>
-      <div class="feat">
-        <div class="feat-icon">📐</div>
-        <div class="feat-title vi">Neo & Nối Trong Bê Tông</div>
-        <div class="feat-title en">Development & Splice</div>
-        <div class="feat-desc vi">Tính chiều dài neo cốt thép vào bê tông và chiều dài nối chồng theo TCVN 5574:2018.</div>
-        <div class="feat-desc en">Compute rebar development length into concrete and lap splice per TCVN 5574:2018.</div>
-      </div>
-      <div class="feat">
-        <div class="feat-icon">📊</div>
-        <div class="feat-title vi">Hàm Lượng Cốt Thép</div>
-        <div class="feat-title en">Reinforcement Ratio</div>
-        <div class="feat-desc vi">Kiểm tra ρ thực tế so với ρmin/ρmax, cảnh báo vượt hàm lượng và đề xuất Lenton.</div>
-        <div class="feat-desc en">Check actual ρ vs ρmin/ρmax limits, warn on over-reinforcement and suggest Lenton alternatives.</div>
-      </div>
-      <div class="feat">
-        <div class="feat-icon">✨</div>
-        <div class="feat-title vi">Giao Diện Thông Minh</div>
-        <div class="feat-title en">Smart Interface</div>
-        <div class="feat-desc vi">Trực quan, hỗ trợ hai ngôn ngữ, dark/light mode và hình minh họa bê tông cốt thép.</div>
-        <div class="feat-desc en">Intuitive bilingual UI with dark/light mode and RC-specific illustrations.</div>
+    <div class="scroll-hint">
+      <span class="vi">Cuộn xuống</span>
+      <span class="en">Scroll down</span>
+      <svg class="scroll-arrow" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+    </div>
+  </section>
+
+  <!-- PAGE 1: FEATURES -->
+  <section class="page" id="page-1">
+    <div class="page-inner">
+      <div class="page-label vi">Tính năng</div>
+      <div class="page-label en">Features</div>
+      <h2 class="page-h vi">Đủ Công Cụ<br>Cho <em>Kỹ Sư.</em></h2>
+      <h2 class="page-h en">Everything an<br><em>RC Engineer</em> Needs.</h2>
+      <p class="page-sub vi">Từ tra bảng nhanh đến xuất báo cáo hoàn chỉnh với đầy đủ điều khoản tiêu chuẩn trích dẫn.</p>
+      <p class="page-sub en">From quick lookup to full calculation report with complete standard clause references.</p>
+      <div class="feat-grid">
+        <div class="fcard">
+          <div class="ficon ic-d"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M3 12h2M19 12h2M12 3v2M12 19v2"/></svg></div>
+          <div class="fcard-h vi">Tra Đường Kính Thép</div>
+          <div class="fcard-h en">Rebar Diameter Lookup</div>
+          <p class="fcard-d vi">Ø6–Ø40mm — diện tích, khối lượng dài, lực tính toán tức thì.</p>
+          <p class="fcard-d en">Ø6–Ø40mm — instant As, unit weight, design force lookup.</p>
+        </div>
+        <div class="fcard">
+          <div class="ficon ic-s"><svg viewBox="0 0 24 24"><path d="M3 12h18M8 7l-5 5 5 5M16 7l5 5-5 5"/></svg></div>
+          <div class="fcard-h vi">Chiều Dài Neo & Nối</div>
+          <div class="fcard-h en">Anchorage & Lap Splice</div>
+          <p class="fcard-d vi">Tính lb,req / Ls theo DIN §8.4 và SIA §5.2 với cảnh báo đạt/không đạt.</p>
+          <p class="fcard-d en">Compute lb,req / Ls per DIN §8.4 and SIA §5.2 with visual pass/fail.</p>
+        </div>
+        <div class="fcard">
+          <div class="ficon ic-b"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="18" rx="1"/></svg></div>
+          <div class="fcard-h vi">Hàm Lượng Cốt Thép</div>
+          <div class="fcard-h en">Reinforcement Ratio</div>
+          <p class="fcard-d vi">So sánh ρ thực tế với ρmin/ρmax — tự động đề xuất Lenton coupler.</p>
+          <p class="fcard-d en">Compare actual ρ vs limits — auto-suggests Lenton coupler when exceeded.</p>
+        </div>
+        <div class="fcard">
+          <div class="ficon ic-d"><svg viewBox="0 0 24 24"><path d="M8 12h8M2 7h4M18 7h4M2 17h4M18 17h4"/><rect x="5" y="9" width="4" height="6" rx="1"/><rect x="15" y="9" width="4" height="6" rx="1"/></svg></div>
+          <div class="fcard-h vi">Tư Vấn Lenton Coupler</div>
+          <div class="fcard-h en">Lenton Coupler Advisor</div>
+          <p class="fcard-d vi">Gợi ý loại coupler khi không đủ chiều dài nối hoặc hàm lượng vượt giới hạn.</p>
+          <p class="fcard-d en">Recommends coupler type when lap space or ratio exceeds DIN/SIA limits.</p>
+        </div>
+        <div class="fcard">
+          <div class="ficon ic-s"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg></div>
+          <div class="fcard-h vi">Xuất Báo Cáo PDF</div>
+          <div class="fcard-h en">PDF Report Export</div>
+          <p class="fcard-d vi">Báo cáo chuyên nghiệp với đầy đủ công thức và điều khoản tiêu chuẩn.</p>
+          <p class="fcard-d en">Professional report with all formulas and full standard clause references.</p>
+        </div>
+        <div class="fcard">
+          <div class="ficon ic-b"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+          <div class="fcard-h vi">Đa Ngôn Ngữ</div>
+          <div class="fcard-h en">Multilingual</div>
+          <p class="fcard-d vi">Tiếng Đức, Anh, Pháp, Việt — giao diện và báo cáo tự động theo ngôn ngữ.</p>
+          <p class="fcard-d en">German, English, French, Vietnamese — UI and reports adapt automatically.</p>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- DOWNLOAD CARD -->
-  <div class="dl-card">
-    <div class="card-head">
-      <div>
-        <div class="ver-tag" id="ver-tag">v0.0.0</div>
-        <div class="app-name-big">Struct Pro</div>
-        <div class="app-tagline" id="app-tagline">
-          <span class="vi">Đang tải thông tin…</span>
-          <span class="en">Loading release info…</span>
+  <!-- PAGE 2: STANDARDS -->
+  <section class="page" id="page-2">
+    <div class="page-inner">
+      <div class="page-label vi">Tiêu chuẩn được hỗ trợ</div>
+      <div class="page-label en">Supported standards</div>
+      <h2 class="page-h vi">Hai Tiêu Chuẩn<br><em>Hàng Đầu.</em></h2>
+      <h2 class="page-h en">Two Premier<br><em>Standards.</em></h2>
+      <div class="std-grid">
+        <div class="std-card dc">
+          <div class="std-head">
+            <span class="std-flag">🇩🇪</span>
+            <div class="std-code">DIN EN 1992-1-1</div>
+            <div class="std-name">Eurocode 2</div>
+            <div class="std-full">Bemessung von Stahlbeton- und Spannbetontragwerken · German NA</div>
+          </div>
+          <div class="std-body">
+            <ul class="fl">
+              <li><div class="fdot"></div><span class="vi">Neo lb,req và l₀ theo §8.4 — hệ số α1–α5 đầy đủ</span><span class="en">Anchorage lb,req and l₀ per §8.4 — full α1–α5 factors</span></li>
+              <li><div class="fdot"></div><span class="vi">Kiểm tra hàm lượng ρmin/ρmax theo DIN NA §9</span><span class="en">Reinforcement ratio ρmin/ρmax check per DIN NA §9</span></li>
+              <li><div class="fdot"></div><span class="vi">Bảng thép B500A / B500B / B500C</span><span class="en">Rebar table B500A / B500B / B500C</span></li>
+            </ul>
+            <div class="specs">
+              <div class="sp"><div class="sp-l">Edition</div><div class="sp-v">2011</div></div>
+              <div class="sp"><div class="sp-l">fyk</div><div class="sp-v">500 MPa</div></div>
+              <div class="sp"><div class="sp-l">fyd</div><div class="sp-v">435 MPa</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="std-card sc">
+          <div class="std-head">
+            <span class="std-flag">🇨🇭</span>
+            <div class="std-code">SIA 262:2013</div>
+            <div class="std-name">Swiss Norm</div>
+            <div class="std-full">Betonbau — Schweizerischer Ingenieur- und Architektenverein</div>
+          </div>
+          <div class="std-body">
+            <ul class="fl">
+              <li><div class="fdot"></div><span class="vi">Einbindelänge lb và ls theo SIA 262 §5.2</span><span class="en">Einbindelänge lb and ls per SIA 262 §5.2</span></li>
+              <li><div class="fdot"></div><span class="vi">Bewehrungsgehalt check theo giới hạn SIA</span><span class="en">Bewehrungsgehalt check against SIA limits</span></li>
+              <li><div class="fdot"></div><span class="vi">Bảng thép B500A / B500B (fsd = 435 MPa)</span><span class="en">Rebar table B500A / B500B (fsd = 435 MPa)</span></li>
+            </ul>
+            <div class="specs">
+              <div class="sp"><div class="sp-l">Edition</div><div class="sp-v">2013</div></div>
+              <div class="sp"><div class="sp-l">fyk</div><div class="sp-v">500 MPa</div></div>
+              <div class="sp"><div class="sp-l">fsd</div><div class="sp-v">435 MPa</div></div>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="rel-date" id="rel-date">—</div>
     </div>
+  </section>
 
-    <div class="stats-row">
-      <div class="stat">
-        <div class="stat-label"><span class="vi">Phiên bản</span><span class="en">Version</span></div>
-        <div class="stat-val" id="s-ver">—</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label"><span class="vi">Kích thước</span><span class="en">Size</span></div>
-        <div class="stat-val" id="s-size">—</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label"><span class="vi">Trạng thái</span><span class="en">Status</span></div>
-        <div class="stat-val" style="color:var(--success)">✓ Stable</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label"><span class="vi">Lượt tải</span><span class="en">Downloads</span></div>
-        <div class="stat-val" id="s-dl">—</div>
+  <!-- PAGE 3: COMPARE -->
+  <section class="page" id="page-3">
+    <div class="page-inner">
+      <div class="page-label vi">So sánh tiêu chuẩn</div>
+      <div class="page-label en">Standard comparison</div>
+      <h2 class="page-h vi">DIN vs SIA —<br><em>Điểm Khác Biệt.</em></h2>
+      <h2 class="page-h en">DIN vs SIA —<br><em>Key Differences.</em></h2>
+      <div class="cmp-grid">
+        <div class="cmp-col dcol">
+          <div class="cmp-head">
+            <div class="cmp-norm">DIN EN 1992-1-1</div>
+            <div class="cmp-title">🇩🇪 Eurocode 2</div>
+          </div>
+          <div class="cmp-row"><div class="cr-l">Anchorage formula</div><div class="cr-v"><strong>lb,req = (Ø/4)·(σsd/fbd)</strong></div></div>
+          <div class="cmp-row"><div class="cr-l">Lap splice</div><div class="cr-v"><strong>l₀ = α₆ · lb,req</strong> (α₆ = 1.5)</div></div>
+          <div class="cmp-row"><div class="cr-l">Bond stress fbd</div><div class="cr-v"><strong>2.25·η₁·η₂·fctd</strong></div></div>
+          <div class="cmp-row"><div class="cr-l">ρmin (beam)</div><div class="cr-v"><strong>0.26·fctm/fyk ≥ 0.13%</strong></div></div>
+          <div class="cmp-row"><div class="cr-l">ρmax</div><div class="cr-v"><strong>4.0%</strong></div></div>
+          <div class="cmp-row"><div class="cr-l">Steel grades</div><div class="cr-v"><strong>B500A · B500B · B500C</strong></div></div>
+        </div>
+        <div class="cmp-col scol">
+          <div class="cmp-head">
+            <div class="cmp-norm">SIA 262:2013</div>
+            <div class="cmp-title">🇨🇭 Swiss Norm</div>
+          </div>
+          <div class="cmp-row"><div class="cr-l">Anchorage formula</div><div class="cr-v"><strong>lb = (Ø/4)·(fsd/τbd)</strong></div></div>
+          <div class="cmp-row"><div class="cr-l">Lap splice</div><div class="cr-v"><strong>ls ≥ 1.2 · lb</strong> (§5.2.7)</div></div>
+          <div class="cmp-row"><div class="cr-l">Bond stress τbd</div><div class="cr-v"><strong>τb0·ξ₁·ξ₂</strong> (§5.2.5)</div></div>
+          <div class="cmp-row"><div class="cr-l">ρmin (beam)</div><div class="cr-v"><strong>0.20%</strong> (§5.5.2)</div></div>
+          <div class="cmp-row"><div class="cr-l">ρmax</div><div class="cr-v"><strong>3.0%</strong></div></div>
+          <div class="cmp-row"><div class="cr-l">Steel grades</div><div class="cr-v"><strong>B500A · B500B</strong></div></div>
+        </div>
       </div>
     </div>
+  </section>
 
-    <div class="dl-grid" id="dl-grid"></div>
-  </div>
-
-  <!-- CHANGELOG -->
-  <div class="changelog-card">
-    <div class="sec-title">Changelog</div>
-    <ul class="cl-list" id="cl-list">
-      <li><span class="ctag t-imp">INFO</span>
-        <span class="vi">Đang tải changelog…</span>
-        <span class="en">Loading changelog…</span>
-      </li>
-    </ul>
-  </div>
-
-  <!-- HISTORY -->
-  <div class="hist-card">
-    <div class="sec-title">
-      <span class="vi">Lịch sử phiên bản</span>
-      <span class="en">Version History</span>
+  <!-- PAGE 4: DOWNLOAD CTA -->
+  <section class="page" id="page-4">
+    <div class="page-inner">
+      <div class="page-label vi">Sẵn sàng dùng thử</div>
+      <div class="page-label en">Ready to try</div>
+      <div class="dl-big vi">Tải Xuống<br><span style="background:linear-gradient(120deg,var(--din),var(--sia));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Miễn Phí.</span></div>
+      <div class="dl-big en">Download<br><span style="background:linear-gradient(120deg,var(--din),var(--sia));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">for Free.</span></div>
+      <p class="dl-sub vi">Windows · macOS · Linux — đầy đủ DIN EN 1992 và SIA 262, không cần kết nối internet.</p>
+      <p class="dl-sub en">Windows · macOS · Linux — full DIN EN 1992 and SIA 262, works offline.</p>
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:4px">
+        <a class="btn-main dl-btn" href="https://github.com/Struc-Pro/download/releases/latest">
+          <svg viewBox="0 0 24 24" style="width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round"><path d="M12 3v13M7 11l5 5 5-5M3 20h18"/></svg>
+          <span>Windows · macOS · Linux</span>
+        </a>
+        <span class="gh-version" style="font-family:'DM Mono',monospace;font-size:12px;color:var(--ok);display:none;border:1px solid rgba(15,168,117,.25);padding:4px 12px;border-radius:20px;background:rgba(15,168,117,.08)"></span>
+      </div>
+      <div class="dl-badges">
+        <span class="dlb">✓ <span class="vi">Miễn phí</span><span class="en">Free</span></span>
+        <span class="dlb">✓ DIN EN 1992-1-1:2011</span>
+        <span class="dlb">✓ SIA 262:2013</span>
+        <span class="dlb">✓ PDF Export</span>
+        <span class="dlb">✓ <span class="vi">Đa ngôn ngữ</span><span class="en">Multilingual</span></span>
+        <span class="gh-dlcount dlb" style="display:none;color:var(--sub)"></span>
+      </div>
     </div>
-    <div id="hist-body"></div>
-  </div>
+  </section>
 
-  <!-- FOOTER -->
-  <footer>
-    <span class="vi">Dành cho <strong style="color:var(--sub)">Kỹ sư Bê Tông Cốt Thép</strong></span>
-    <span class="en">Built for <strong style="color:var(--sub)">RC Structural Engineers</strong></span>
-    &nbsp;·&nbsp;
-    Powered by <a href="https://github.com" target="_blank">GitHub Releases</a>
-    &nbsp;·&nbsp;
-    <a href="https://github.com/tranminhhai06102001-tech/myapp-download/releases" target="_blank">
-      <span class="vi">Tất cả phiên bản</span>
-      <span class="en">All releases</span>
-    </a>
-    <br/><br/>
-    <span style="color:var(--muted)">Tác giả: <strong style="color:var(--sub)">Trần Minh Hải</strong></span>
-  </footer>
+  <!-- PAGE 5: FOOTER -->
+  <section class="page" id="page-5" style="justify-content:flex-end;padding-bottom:8vh">
+    <div class="page-inner">
+      <div class="footer-content">
+        <div>
+          <div class="footer-logo">Struct<em>Pro</em></div>
+          <div class="footer-by vi">Tác giả: Trần Minh Hải</div>
+          <div class="footer-by en">By Trần Minh Hải</div>
+        </div>
+        <div class="footer-chips">
+          <span class="fc">DIN EN 1992-1-1:2011</span>
+          <span class="fc">SIA 262:2013</span>
+          <span class="fc">Eurocode 2</span>
+          <span class="fc">B500A · B500B · B500C</span>
+        </div>
+        <div class="footer-copy">© 2025 StructPro — <span class="vi">Phần mềm kỹ thuật kết cấu</span><span class="en">Structural engineering software</span></div>
+      </div>
+    </div>
+  </section>
+
 </div>
 
 <script>
-  // ============================================================
-  // ⚙️ CONFIG
-  // ============================================================
-  const GITHUB_USER = "Struc-Pro";
-  const GITHUB_REPO = "download";
-  // ============================================================
+const TOTAL = 6;
+let current = 0;
 
-  /* ── THEME ── */
-  function toggleTheme() {
-    const html = document.documentElement;
-    const isDark = html.getAttribute('data-theme') === 'dark';
-    html.setAttribute('data-theme', isDark ? 'light' : 'dark');
-    document.getElementById('theme-icon').textContent = isDark ? '☀️' : '🌙';
-  }
+// Build dots
+const dotsEl = document.getElementById('page-dots');
+for(let i=0;i<TOTAL;i++){
+  const b = document.createElement('button');
+  b.className = 'pdot' + (i===0?' active':'');
+  b.setAttribute('aria-label','Page '+(i+1));
+  b.addEventListener('click',()=>goToPage(i));
+  dotsEl.appendChild(b);
+}
 
-  /* ── LANGUAGE ── */
-  function setLang(lang) {
-    document.documentElement.setAttribute('data-lang', lang);
-    document.querySelectorAll('.lang-btn').forEach(b => {
-      b.classList.toggle('active', b.textContent === lang.toUpperCase());
-    });
-    updateBadge();
-  }
+function goToPage(n){
+  n = Math.max(0, Math.min(TOTAL-1, n));
+  current = n;
+  document.getElementById('page-'+n).scrollIntoView({behavior:'smooth'});
+  updateDots();
+}
 
-  /* ── SLIDESHOW ── */
-  const SLIDE_DURATION = 4000; // ms per slide
-  let currentSlide = 0;
-  let slideTimer = null;
-  let progressTimer = null;
-  let progressStart = null;
-
-  function goSlide(idx) {
-    const slides = document.querySelectorAll('.slide');
-    const dots   = document.querySelectorAll('.dot');
-    slides[currentSlide].classList.remove('active');
-    dots[currentSlide].classList.remove('active');
-    currentSlide = (idx + slides.length) % slides.length;
-    slides[currentSlide].classList.add('active');
-    dots[currentSlide].classList.add('active');
-    resetProgress();
-  }
-
-  function resetProgress() {
-    const bar = document.getElementById('slide-progress');
-    bar.style.transition = 'none';
-    bar.style.width = '0%';
-    // force reflow
-    bar.getBoundingClientRect();
-    bar.style.transition = `width ${SLIDE_DURATION}ms linear`;
-    bar.style.width = '100%';
-  }
-
-  function startSlideshow() {
-    clearInterval(slideTimer);
-    resetProgress();
-    slideTimer = setInterval(() => {
-      goSlide(currentSlide + 1);
-    }, SLIDE_DURATION);
-  }
-
-  // pause on hover
-  document.addEventListener('DOMContentLoaded', () => {
-    const wrap = document.querySelector('.slideshow-wrap');
-    wrap.addEventListener('mouseenter', () => {
-      clearInterval(slideTimer);
-      document.getElementById('slide-progress').style.transition = 'none';
-    });
-    wrap.addEventListener('mouseleave', () => {
-      startSlideshow();
-    });
-    startSlideshow();
+function updateDots(){
+  document.querySelectorAll('.pdot').forEach((d,i)=>{
+    d.classList.toggle('active', i===current);
   });
+}
 
-  /* ── GITHUB API ── */
-  const API = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/releases`;
-  const PLAT = [
-    {kw:["windows","win",".exe",".msi"], icon:"🪟", label:"Windows"},
-    {kw:["mac","darwin",".dmg",".pkg"],  icon:"🍎", label:"macOS"},
-    {kw:["linux",".deb",".rpm",".appimage"], icon:"🐧", label:"Linux"},
-    {kw:[".apk"], icon:"🤖", label:"Android"},
-    {kw:[".zip",".tar.gz"], icon:"📦", label:"All Platforms"},
-  ];
-
-  const getPlatform = n => { const l=n.toLowerCase(); return PLAT.find(p=>p.kw.some(k=>l.includes(k)))||{icon:"💾",label:n}; };
-  const fmtSize = b => { if(!b)return"—"; const m=b/1024/1024; return m>=1?m.toFixed(1)+" MB":(b/1024).toFixed(0)+" KB"; };
-  const fmtDate = (s,lang) => new Date(s).toLocaleDateString(lang==="vi"?"vi-VN":"en-US",{year:"numeric",month:"long",day:"numeric"});
-  const fmtN    = n => !n?"0":n>=1000?(n/1000).toFixed(1)+"k":""+n;
-
-  let latestRelease = null;
-
-  function getLang() { return document.documentElement.getAttribute('data-lang') || 'vi'; }
-
-  function updateBadge() {
-    if (!latestRelease) return;
-    const lang = getLang();
-    const badge = document.getElementById('latest-badge');
-    const prefix = lang === 'vi' ? '🚀 Phiên bản mới nhất: ' : '🚀 Latest version: ';
-    badge.innerHTML = `<div class="pulse-dot"></div>${prefix}${latestRelease.tag_name}`;
-  }
-
-  async function load() {
-    try {
-      const res = await fetch(API, {headers:{Accept:"application/vnd.github+json"}});
-      if (!res.ok) throw new Error("GitHub API error " + res.status + ". Please update GITHUB_USER/REPO in index.html");
-      const data = await res.json();
-      if (!data.length) throw new Error("No releases found in this repo.");
-      latestRelease = data[0];
-      renderLatest(data[0]);
-      renderHist(data.slice(1, 6));
-    } catch(e) {
-      document.getElementById("latest-badge").innerHTML = `<div class="pulse-dot" style="background:var(--danger)"></div>⚠ ${e.message}`;
+// IntersectionObserver for active dot + enter animation
+const observer = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      const id = e.target.id;
+      const idx = parseInt(id.replace('page-',''));
+      current = idx;
+      updateDots();
+      e.target.classList.add('visible');
     }
-  }
+  });
+},{threshold:0.5});
 
-  function renderLatest(r) {
-    const lang = getLang();
-    updateBadge();
-    document.getElementById("ver-tag").textContent = r.tag_name;
-    document.getElementById("s-ver").textContent   = r.tag_name;
-    document.getElementById("app-tagline").textContent = r.name || "Struct Pro " + r.tag_name;
-    document.getElementById("rel-date").textContent = "📅 " + fmtDate(r.published_at, lang);
-    document.getElementById("s-dl").textContent    = fmtN(r.assets.reduce((a,x) => a+(x.download_count||0), 0));
-    document.getElementById("s-size").textContent  = fmtSize(r.assets.reduce((a,x) => a+(x.size||0), 0));
+for(let i=0;i<TOTAL;i++){
+  const p = document.getElementById('page-'+i);
+  if(p) observer.observe(p);
+}
 
-    const grid = document.getElementById("dl-grid");
-    grid.innerHTML = "";
-    if (!r.assets.length) {
-      grid.innerHTML = `<p style="color:var(--muted);font-size:13px;padding:8px 0">${lang==='vi'?'Chưa có file đính kèm.':'No assets attached to this release.'}</p>`;
-    } else {
-      r.assets.forEach((a, i) => {
-        const p = getPlatform(a.name);
-        const btn = document.createElement("a");
-        btn.href = a.browser_download_url;
-        btn.className = "dl-btn" + (i===0?" primary":"");
-        const dlLabel = lang==='vi' ? 'lượt' : 'dls';
-        btn.innerHTML = `<div class="dl-icon">${p.icon}</div><div class="dl-info"><div class="dl-os">${p.label}</div><div class="dl-size">${fmtSize(a.size)} · ${fmtN(a.download_count)} ${dlLabel}</div></div><div class="dl-arrow">↓</div>`;
-        grid.appendChild(btn);
+// Theme & lang
+function toggleTheme(){
+  const h=document.documentElement;
+  const dark=h.getAttribute('data-theme')==='dark';
+  h.setAttribute('data-theme',dark?'light':'dark');
+  document.getElementById('theme-icon').textContent=dark?'☀️':'🌙';
+}
+function setLang(l){
+  document.documentElement.setAttribute('data-lang',l);
+  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active',b.textContent===l.toUpperCase()));
+}
+
+// Keyboard navigation
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowDown'||e.key==='PageDown') goToPage(current+1);
+  if(e.key==='ArrowUp'||e.key==='PageUp') goToPage(current-1);
+});
+
+// GitHub Release API
+const GITHUB_USER = "Struc-Pro";
+const GITHUB_REPO = "download";
+async function fetchRelease(){
+  try{
+    const r = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/releases/latest`);
+    if(!r.ok) return;
+    const d = await r.json();
+    const version = d.tag_name || '';
+    const totalDL = d.assets.reduce((s,a)=>s+a.download_count,0);
+    const prefer = ['.exe','.dmg','.appimage','.zip','.tar.gz'];
+    let asset = null;
+    for(const ext of prefer){
+      asset = d.assets.find(a=>a.name.toLowerCase().endsWith(ext));
+      if(asset) break;
+    }
+    const dlUrl = asset ? asset.browser_download_url : d.html_url;
+    document.querySelectorAll('.dl-btn').forEach(btn=>{ btn.href = dlUrl; });
+    if(version){
+      document.querySelectorAll('.gh-version').forEach(el=>{
+        el.textContent = version; el.style.display='';
       });
     }
-
-    const cl = document.getElementById("cl-list");
-    cl.innerHTML = "";
-    const lines = (r.body||"").trim().split("\n").map(l=>l.trim()).filter(Boolean);
-    if (lines.length) {
-      lines.slice(0, 10).forEach(line => {
-        const li = document.createElement("li");
-        const lo = line.toLowerCase();
-        let cls = "t-imp", lbl = lang==='vi'?"CẢI TIẾN":"IMPROVE";
-        if (lo.includes("new")||lo.includes("thêm")||lo.includes("add"))  { cls="t-new"; lbl=lang==='vi'?"MỚI":"NEW"; }
-        else if (lo.includes("fix")||lo.includes("sửa")||lo.includes("bug")) { cls="t-fix"; lbl=lang==='vi'?"SỬA":"FIX"; }
-        li.innerHTML = `<span class="ctag ${cls}">${lbl}</span>${line.replace(/^[-*#\d.]+\s*/,"").trim()}`;
-        cl.appendChild(li);
+    if(totalDL > 0){
+      document.querySelectorAll('.gh-dlcount').forEach(el=>{
+        el.textContent = '↓ ' + totalDL.toLocaleString() + ' downloads';
+        el.style.display='';
       });
-    } else {
-      const lbl = lang==='vi' ? `MỚI` : `NEW`;
-      const msg = lang==='vi' ? `Phiên bản ${r.tag_name} đã ra mắt.` : `Version ${r.tag_name} released.`;
-      cl.innerHTML = `<li><span class="ctag t-new">${lbl}</span>${msg}</li>`;
     }
-  }
-
-  function renderHist(releases) {
-    const lang = getLang();
-    const c = document.getElementById("hist-body");
-    if (!releases.length) {
-      c.innerHTML = `<p style="color:var(--muted);font-size:13px">${lang==='vi'?'Chưa có lịch sử phiên bản.':'No version history yet.'}</p>`;
-      return;
-    }
-    const dlLabel = lang==='vi' ? 'Tải xuống' : 'Download';
-    c.innerHTML = releases.map(r => {
-      const url = (r.assets[0]||{}).browser_download_url || r.html_url;
-      return `<div class="hist-row">
-        <div class="hist-ver">${r.tag_name}</div>
-        <div class="hist-date">${fmtDate(r.published_at, lang)}</div>
-        <a href="${url}" class="hist-dl">${dlLabel}</a>
-      </div>`;
-    }).join("");
-  }
-
-  load();
+  } catch(e){ console.warn('GitHub API error',e); }
+}
+fetchRelease();
 </script>
 </body>
 </html>
